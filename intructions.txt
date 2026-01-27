@@ -1,0 +1,230 @@
+
+
+# **instructions.txt**
+
+# ------------------------------------------------------------
+
+# Deployment Guide: OpenContracts on DigitalOcean
+
+# For: AI Agent for Software License Analysis
+
+# Repo: <https://github.com/Open-Source-Legal/OpenContracts>
+
+# ------------------------------------------------------------
+
+## 1. Create Your DigitalOcean Droplet
+
+1.  Log in to DigitalOcean.
+2.  Create a new **Droplet**:
+    *   Image: **Ubuntu 22.04 LTS**
+    *   Size: **4GB RAM / 2 vCPUs** (minimum recommended)
+    *   Add your SSH key
+3.  After creation, SSH into the server:
+
+<!---->
+
+    ssh root@YOUR_DROPLET_IP
+
+***
+
+## 2. Install System Dependencies
+
+Run:
+
+    apt update && apt upgrade -y
+
+### Install Docker:
+
+    curl -fsSL https://get.docker.com | sh
+
+### Install docker-compose plugin:
+
+    apt install docker-compose-plugin -y
+
+***
+
+## 3. Clone the OpenContracts Repository
+
+    git clone https://github.com/Open-Source-Legal/OpenContracts.git
+    cd OpenContracts
+
+OpenContracts is a self-hosted, AI-powered document intelligence platform for parsing, analyzing, and extracting structured data from legal documents such as contracts and licenses. It supports annotated document analysis, AI assistants, and structured data extraction. [\[github.com\]](https://github.com/Open-Source-Legal/OpenContracts)
+
+***
+
+## 4. Create and Configure the Environment File
+
+Copy the example environment file:
+
+    cp .env.sample .env
+
+Edit it:
+
+    nano .env
+
+Set the required fields:
+
+    POSTGRES_PASSWORD=your_strong_password
+    SECRET_KEY=your_random_secret_key
+    DJANGO_SUPERUSER_EMAIL=admin@example.com
+    DJANGO_SUPERUSER_PASSWORD=StrongPassword123!
+
+Save and exit.
+
+***
+
+## 5. Start OpenContracts (Production Mode)
+
+Run:
+
+    docker compose -f production.yml up -d
+
+Check logs:
+
+    docker compose -f production.yml logs -f
+
+This launches:
+
+*   Backend (Django)
+*   Frontend (React)
+*   PostgreSQL
+*   Redis
+*   Celery workers  
+    All required for OpenContracts’ document processing and AI-powered extraction capabilities. [\[github.com\]](https://github.com/Open-Source-Legal/OpenContracts)
+
+***
+
+## 6. Create Django Superuser (If Needed)
+
+If a superuser wasn’t created automatically:
+
+    docker exec -it opencontracts-backend-1 bash
+    python manage.py createsuperuser
+
+Follow the prompts.
+
+***
+
+## 7. Access the Web App
+
+Open your browser and go to:
+
+    http://YOUR_DROPLET_IP
+
+Log in using your superuser credentials.
+
+***
+
+## 8. Add an Extraction Schema for Software License Agreements
+
+Inside the repo, go to:
+
+    opencontractserver/schema/
+
+Create a new schema file:
+
+    nano license_agent_schema.json
+
+Paste the following:
+
+    {
+      "name": "software_license_extraction",
+      "fields": [
+        "license_type",
+        "usage_restrictions",
+        "territory",
+        "term",
+        "renewal_terms",
+        "fees",
+        "ip_ownership",
+        "indemnification",
+        "liability_cap",
+        "support_sla",
+        "data_privacy_terms",
+        "security_controls",
+        "termination",
+        "audit_rights",
+        "subprocessor_policy"
+      ]
+    }
+
+Save and exit.
+
+### Restart the system:
+
+    docker compose -f production.yml restart
+
+This new schema can be used within OpenContracts’ AI-assisted extraction and structured data tools. [\[github.com\]](https://github.com/Open-Source-Legal/OpenContracts)
+
+***
+
+## 9. Configure Your LLM Provider
+
+### Option A — Using OpenAI
+
+Edit `.env`:
+
+    OPENAI_API_KEY=your_key
+    LLM_PROVIDER=openai
+    MODEL_NAME=gpt-4o-mini
+
+### Option B — Using a Self-Hosted Model (Llama 3, Mixtral)
+
+Deploy an inference server:
+
+    docker run -d -p 8000:8000 ghcr.io/ggerganov/llama.cpp:server \
+        -m /models/Llama-3-8B-instruct.gguf
+
+Update `.env`:
+
+    LLM_PROVIDER=custom
+    LLM_ENDPOINT=http://localhost:8000
+
+Restart:
+
+    docker compose -f production.yml restart
+
+***
+
+## 10. Upload and Analyze a Software License Agreement
+
+1.  Go to the OpenContracts UI.
+2.  Upload a PDF, DOCX, or scanned agreement.
+3.  Select the extraction schema:
+    *   **software\_license\_extraction**
+4.  Run the AI Agent to extract all key clauses:
+    *   License Type
+    *   Use Restrictions
+    *   Liability Caps
+    *   IP Ownership
+    *   SLAs
+    *   Privacy/Data Terms
+    *   Termination
+    *   Audit Rights
+    *   Etc.
+
+OpenContracts supports structured data extraction, annotation, analysis, and AI-driven clause detection for legal documents. [\[github.com\]](https://github.com/Open-Source-Legal/OpenContracts)
+
+***
+
+## 11. (Optional) Backup and Maintenance Commands
+
+### Stop the stack:
+
+    docker compose -f production.yml down
+
+### Restart:
+
+    docker compose -f production.yml restart
+
+### View running containers:
+
+    docker ps
+
+***
+
+# ------------------------------------------------------------
+
+# END OF INSTRUCTIONS FILE
+
+# ------------------------------------------------------------
