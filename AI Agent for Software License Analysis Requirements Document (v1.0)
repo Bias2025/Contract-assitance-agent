@@ -1,0 +1,238 @@
+AI Agent for Software License Analysis
+Requirements Document (v1.0)
+1) Purpose & Scope
+
+Goal: Automate the review of software license agreements to extract key legal/business terms, assess compliance/risk against internal playbooks, and accelerate legal/procurement workflows.
+In-scope documents: Commercial software licenses, EULAs, MSAs, SOWs, DPAs/BAAs, Reseller/OEM agreements, Partner/Channel agreements, T&Cs, and Open-Source Licenses (e.g., MIT, Apache-2.0, GPL, AGPL, LGPL, MPL).
+Out-of-scope (v1): Litigation filings, patents; non-English contracts unless specified; negotiation/auto-redlining (v2+).
+
+
+2) Users & Roles
+
+Primary: Legal Counsel, Procurement, Vendor Management, Compliance, Security GRC.
+Secondary: Engineering Leads, Finance/AP, Product/OSS compliance.
+Roles/Permissions:
+
+Reviewer: View & annotate outputs, approve/reject clauses.
+Editor: Edit extracted terms, override flags, mark disposition.
+Admin: Configure policies/playbooks, manage models, data retention, audit.
+Auditor: Read-only logs, exports, evidence.
+
+
+
+
+3) Functional Requirements
+3.1 Ingestion & Parsing
+
+Accept PDF (text + scanned), DOCX, HTML, TXT, ZIP (with attachments).
+Handle multi-document agreements (main + exhibits/schedules/DPAs/SOWs).
+OCR for scanned PDFs; preserve page/section references.
+Split by section headings, numbering, and TOC when present.
+
+3.2 Key Term Extraction (Mandatory)
+For each document, detect and extract:
+
+Commercial & Grant: License type (perpetual/subscription/SaaS), scope/use rights, seat/user/device limits, metrics, geographical territory, term (initial + renewal), fees, payment terms, taxes.
+Use Restrictions: Reverse engineering, benchmarking, no-competition, distribution, cloud deployment, data mining, derivative works, third-party use.
+Sub-licensing/Assignment/Transfer: Permissions, conditions, change-of-control.
+IP & Confidentiality: Ownership (foreground/background), IP assignment, confidentiality/NDA carve-outs, residual knowledge.
+Data & Privacy: Personal data categories, processing purposes, cross-border transfers, sub-processors, DPA/BAA presence, SCCs, data residency, retention/deletion, audit rights, incident notification SLA.
+Security: Baseline controls, SOC 2/ISO references, encryption, vulnerability handling, penetration testing rights, audit/assessment rights.
+Indemnification: Scope (IP infringement, data breach), exclusions, caps.
+Liability & Warranty: Limitation of liability caps (direct/indirect), carve-outs, disclaimers, performance warranties, uptime SLA & service credits.
+Support & Updates: Support tiers, response/restore SLAs, patch policies, end-of-life.
+Open Source (OSS): Included FOSS components, license obligations (notice/attribution), copyleft triggers, source availability, SBOM availability.
+Termination: For cause/convenience, cure periods, post-termination assistance, data return/deletion.
+Compliance & Export: Sanctions, export control, anti-bribery, accessibility.
+Governing Law/Dispute: Jurisdiction, arbitration, venue.
+Notices/Change Process: Addresses, notification methods, amendment mechanics.
+
+
+For each extracted term, capture: normalized field name, raw clause text, page/section reference, confidence score, detected risk label(s), and suggested clause summary.
+
+3.3 Risk Detection & Policy Alignment
+
+Compare extracted terms to enterprise playbooks (configurable thresholds & redlines).
+
+Examples: “Liability cap < 12 months fees → High risk”, “No audit rights → Medium risk”, “GPL components in proprietary product → High compliance risk”.
+
+
+Assign Risk Score (0–100) and Severity (High/Med/Low) with explanatory rationale.
+Clause Similarity: Map clauses to approved templates or fallback language.
+Delta Detection: Highlight deviations from “gold-standard” templates.
+
+3.4 Summarization & Reviewer Aids
+
+Generate executive summary (bulleted) with top issues, blockers, and negotiation levers.
+Clause-by-clause digest and term sheet view.
+Questions for vendor auto-generated for gaps/ambiguities.
+Redline Suggestions (v2): Propose alternative language with rationale.
+
+3.5 Search, Compare, & Analytics
+
+Semantic search across repository (e.g., “show all agreements with unlimited liability”).
+Version compare: Compare drafts; show diff of extracted terms & risks.
+Portfolio dashboards: risk distribution, common deviations, vendors by risk.
+
+3.6 Human-in-the-Loop (HITL)
+
+Inline approve/edit for any term; corrections retrain/fine-tune extraction.
+Workflow: Draft → Review → Approved → Export.
+Audit trail for all edits, decisions, timestamps, user IDs.
+
+3.7 Outputs & Integration
+
+Exports: JSON (schema below), DOCX summary, CSV term sheet, PDF report with bookmarks.
+APIs: REST endpoints to submit document, get status, retrieve results, search.
+Integrations (optional v1): SharePoint/OneDrive, Microsoft Teams notifications, CLM tools (Icertis/DocuSign CLM), Jira/ServiceNow for tasks.
+
+
+4) Non-Functional Requirements
+
+Accuracy targets (v1):
+
+Term extraction F1 ≥ 0.85 across top 25 fields.
+Risk classification precision ≥ 0.90 for High severity flags.
+Summarization user satisfaction ≥ 4.3/5.
+
+
+Performance: < 90 seconds end-to-end for < 50 pages; scalable to 300 pages.
+Security/Privacy: Data encrypted at rest and in transit (TLS 1.2+), role-based access, tenant isolation, retention controls, secrets in KMS/HSM.
+Compliance: Logging for audit, support GDPR data subject rights, configurable data residency, model run provenance.
+Reliability: 99.5% service availability (business hours v1), idempotent processing, retry logic.
+Explainability: Show rationale, evidence spans, and confidence scores for each extraction/flag.
+
+
+5) Architecture Overview
+5.1 Pipeline
+
+Ingest & Pre-process: File normalization → OCR (if needed) → structure detection → section segmentation.
+Document Intelligence: Layout parsing (tables, headers, lists, footers), clause boundary detection.
+Term Extraction: Hybrid approach:
+
+LLM-based extraction with few-shot prompts + constrained outputs (JSON schema).
+Regex/patterns for numeric terms (caps, SLAs, dates, fees).
+Ontology & synonyms for robust matching (e.g., “limitation of liability” ~ “liability cap”).
+
+
+Risk & Policy Engine: Rule-based checks + LLM clause similarity against playbooks.
+Summarization: Structured, prompt-templated summaries with verifiable citations (page refs).
+HITL & Feedback Loop: Corrections logged; weekly batch fine-tuning (optional).
+Storage: Document store (blob), vector store for semantic search, relational DB for structured outputs and audit logs.
+
+5.2 Model Options (cloud-agnostic)
+
+Document parsing: Azure Document Intelligence / AWS Textract / Google Document AI.
+LLMs: GPT-4.1/4o-class for extraction & summarization; smaller SLM for low-latency classification; optional legal-tuned LLM (e.g., fine-tuned on internal corpus).
+Embeddings: Text-embedding models for clause retrieval.
+Safety: Prompt shields, output validators, PII masking for logs.
+
+
+6) Data Model & JSON Output Schema (v1)
+JSON{  "document_id": "uuid",  "metadata": {    "title": "string",    "vendor": "string",    "doc_type": "MSA|EULA|DPA|SOW|Other",    "received_date": "YYYY-MM-DD",    "language": "en",    "pages": 42,    "hash": "sha256"  },  "extractions": [    {      "field": "limitation_of_liability.cap",      "value": "12 months of fees",      "normalized": {"cap_basis": "fees_12m", "amount": null},      "evidence": {"page": 14, "section": "10.2", "text_snippet": "In no event..."},      "confidence": 0.92,      "risk": [{"label": "cap_meets_policy", "severity": "low", "rationale": ">=12m"}]    },    {      "field": "license.type",      "value": "Subscription (SaaS)",      "normalized": {"category": "saas"},      "evidence": {"page": 2, "section": "2.1"},      "confidence": 0.88,      "risk": []    }  ],  "summary": {    "executive": ["Cap: 12m fees (meets policy)", "No audit right (blocker)"],    "questions_for_vendor": ["Confirm data deletion cert within 30 days of termination."]  },  "risk_score": 72,  "policy_violations": [    {"rule_id": "AUDIT-001", "severity": "high", "details": "No audit rights found"}  ],  "audit": {    "created_at": "ISO8601",    "model_version": "llm-x.y",    "policy_pack_version": "2026.01"  }}``Show more lines
+
+7) Policy/Playbook Configuration (examples)
+
+Liability: Cap ≥ 12 months fees → OK; uncapped indirect → High.
+Indemnity: Must cover IP infringement incl. OSS → Medium if excludes OSS; High if excludes IP entirely.
+Privacy: Breach notice ≤ 72 hours; sub-processors require approval; SCCs for cross-border → deviations flagged.
+Security: Annual pen test, SOC2 Type II or ISO 27001 → warn if absent.
+OSS: No strong copyleft in proprietary code paths; ensure notices & attribution; SBOM required.
+
+
+8) UI/UX Requirements
+
+Upload pane with drag-drop + status.
+Three synchronized views:
+
+Summary (risk cards, top issues, KPIs)
+Term Sheet (tabular extracted fields with confidence, edit inline)
+Document Viewer (highlighted evidence on page)
+
+
+Filters: Severity, vendor, clause type, date.
+One-click exports and Teams share.
+Accessibility: WCAG 2.1 AA.
+
+
+9) Evaluation & QA
+9.1 Metrics
+
+Extraction: Precision/Recall/F1 per field; overall micro/macro F1.
+Risk labels: Precision ≥ 0.9 for High; recall ≥ 0.85.
+Latency & throughput.
+Reviewer time saved: baseline vs assisted (target ≥ 50–70% reduction).
+Inter-rater reliability on annotations (Cohen’s κ ≥ 0.75).
+
+9.2 Test Sets
+
+Gold set of 300+ agreements balanced by type/vendor/length; include 15% scanned/OCR.
+Edge cases: Heavily redlined drafts, footnotes, cross-references, nested definitions, images/tables of SLAs.
+
+9.3 Red Teaming (Responsible AI)
+
+Adversarial prompts, hallucination checks (must cite page refs), sensitive data handling, bias in risk scoring (ensure policy-only, no vendor bias).
+Safety filters for PII leakage in logs/telemetry.
+Regression suite with change gates before deployment.
+
+
+10) Security, Privacy, and Compliance
+
+Data Handling: No training on client data unless explicitly opted-in; separate feature store for fine-tuning with DP controls.
+Encryption: AES-256 at rest; TLS 1.2+ in transit.
+Access: SSO/MFA, RBAC, least privilege; admin actions gated.
+Logging: Immutable audit logs (append-only), tamper-evident.
+Retention: Configurable; default 180 days; purge on request.
+Compliance alignment: GDPR (data minimization, purpose limitation, DSAR support), SOC 2 principles, and EU AI Act transparency & risk controls for an “assistive” enterprise tool.
+Provenance: Record model versions, prompts, and policy pack versions for each run.
+
+
+11) Implementation Plan / Phases
+Phase 0 – Discovery (2–3 weeks)
+
+Collect sample agreements, define target policy pack, annotate 100 docs.
+
+Phase 1 – MVP (6–8 weeks)
+
+Ingestion + OCR + extraction for top 25 fields, JSON export, simple UI, basic policy flags, Teams notifications.
+
+Phase 2 – Scale (6–8 weeks)
+
+Portfolio search, analytics dashboards, CLM integration, improved risk engine, version compare.
+
+Phase 3 – Advanced (8–12 weeks)
+
+Auto-redline suggestions, negotiation playbooks, multi-language, SBOM ingestion for OSS validation.
+
+
+12) Acceptance Criteria (v1)
+
+Upload a 50-page MSA+SOW+Appendices (mixed text/scanned) → <90s processing.
+Achieve F1 ≥ 0.85 across 25 key fields on gold set.
+Produce executive summary with at least 5 top issues, each with page references.
+Risk policy violations correctly flagged per supplied playbook with ≥0.9 precision for High.
+Reviewer can correct any field in UI and export updated DOCX/JSON.
+All events appear in audit log with timestamp, user, before/after state.
+
+
+13) Example Prompts (System / Extraction)
+System (extraction):
+“You are a contracts analyst. Extract only the requested fields using the JSON schema. For each value, include the exact clause snippet and page number. If absent, return null with confidence: 0.0. Never invent content.”
+User (per-batch):
+“Fields: license.type, term.initial, term.renewal, fees.payment_terms, limitation_of_liability.cap, indemnification.scope, audit.rights, data.breach_notification_sla, privacy.cross_border_transfers, oss.copyleft_presence, governing_law. Document text (paginated)….”
+
+14) Risks & Mitigations
+
+Hallucinations → Strict schema + evidence-required extraction; abstention allowed; validator checks.
+OCR errors → Dual OCR engines + confidence thresholds + human review gate.
+Policy drift → Versioned policy packs with change review.
+Latency → Chunking, parallelism, caching embeddings, smaller SLM for classification.
+
+
+15) Glossary
+
+Cap basis: Basis for liability cap (e.g., fees_12m, fixed_amount).
+Copyleft: License terms requiring derivative works to be licensed under the same license (e.g., GPL).
+SCCs: Standard Contractual Clauses for EU data transfers.
+SBOM: Software Bill of Materials.
+
