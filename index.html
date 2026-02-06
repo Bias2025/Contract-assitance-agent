@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Agent for Software License Analysis</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <div class="logo-section">
+                <i class="fas fa-robot"></i>
+                <h1>License Analysis AI Agent</h1>
+            </div>
+            <p class="subtitle">Automated software license compliance and risk assessment</p>
+        </header>
+
+        <!-- Chat Container -->
+        <main class="chat-container">
+            <!-- Chat Messages Area -->
+            <div class="chat-messages" id="chatMessages">
+                <div class="message bot-message">
+                    <div class="message-avatar">
+                        <i class="fas fa-robot"></i>
+                    </div>
+                    <div class="message-content">
+                        <div class="message-text">
+                            Hello! I'm your AI agent for software license analysis. I can help you with:
+                            <ul>
+                                <li>License compliance assessment</li>
+                                <li>Risk analysis and recommendations</li>
+                                <li>Contract term extraction</li>
+                                <li>Legal clause interpretation</li>
+                            </ul>
+                            You can type a custom message or select from the standard prompts below.
+                        </div>
+                        <div class="message-time" id="welcomeTime"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Standard Prompts Dropdown -->
+            <div class="prompt-section">
+                <label for="standardPrompts">Quick Actions:</label>
+                <select id="standardPrompts" class="prompt-dropdown">
+                    <option value="">Choose a standard prompt...</option>
+                    <optgroup label="License Analysis">
+                        <option value="analyze_license">Analyze software license agreement</option>
+                        <option value="identify_risks">Identify compliance risks and red flags</option>
+                        <option value="extract_terms">Extract key legal and business terms</option>
+                        <option value="compare_licenses">Compare multiple license agreements</option>
+                    </optgroup>
+                    <optgroup label="Compliance & Risk">
+                        <option value="compliance_check">Perform compliance assessment</option>
+                        <option value="liability_review">Review liability and indemnification clauses</option>
+                        <option value="data_protection">Analyze data protection requirements</option>
+                        <option value="termination_terms">Review termination and renewal terms</option>
+                    </optgroup>
+                    <optgroup label="Contract Types">
+                        <option value="eula_analysis">Analyze EULA (End User License Agreement)</option>
+                        <option value="msa_review">Review Master Service Agreement (MSA)</option>
+                        <option value="dpa_analysis">Analyze Data Processing Agreement (DPA)</option>
+                        <option value="opensource_review">Review open-source license compliance</option>
+                    </optgroup>
+                    <optgroup label="Decision Support">
+                        <option value="approval_recommendation">Get approval/rejection recommendation</option>
+                        <option value="negotiation_points">Identify key negotiation points</option>
+                        <option value="alternative_solutions">Suggest alternative licensing solutions</option>
+                        <option value="cost_analysis">Analyze licensing costs and obligations</option>
+                    </optgroup>
+                </select>
+                <button class="use-prompt-btn" id="usePromptBtn" disabled>
+                    <i class="fas fa-paper-plane"></i>
+                    Use Selected Prompt
+                </button>
+            </div>
+
+            <!-- Chat Input Area -->
+            <div class="chat-input-container">
+                <div class="input-wrapper">
+                    <textarea
+                        id="messageInput"
+                        placeholder="Type your license analysis question or paste contract text here..."
+                        rows="3"
+                    ></textarea>
+                    <button class="send-btn" id="sendBtn">
+                        <i class="fas fa-paper-plane"></i>
+                    </button>
+                </div>
+                <div class="input-actions">
+                    <button class="action-btn secondary" id="clearBtn">
+                        <i class="fas fa-trash"></i>
+                        Clear Chat
+                    </button>
+                    <button class="action-btn secondary" id="exportBtn">
+                        <i class="fas fa-download"></i>
+                        Export Chat
+                    </button>
+                    <button class="action-btn secondary" id="debugBtn">
+                        <i class="fas fa-bug"></i>
+                        Test API
+                    </button>
+                    <div class="char-count" id="charCount">0/5000</div>
+                </div>
+            </div>
+        </main>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <div class="status-indicator">
+                <span class="status-dot" id="statusDot"></span>
+                <span id="statusText">Connected to AI Agent</span>
+            </div>
+            <p>&copy; 2026 AI License Analysis Agent. Powered by Digital Ocean AI.</p>
+        </footer>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loading-spinner">
+            <i class="fas fa-robot fa-spin"></i>
+            <p>AI Agent is thinking...</p>
+        </div>
+    </div>
+
+    <!-- DO Agent Chatbot Widget (Fallback) -->
+    <script async
+        src="https://cshymth4qto42gsemd5ilwmz.agents.do-ai.run/static/chatbot/widget.js"
+        data-agent-id="8d977b10-fba7-11f0-b074-4e013e2ddde4"
+        data-chatbot-id="1hr94xpwKoOoMvpl-3cAJSmiV-U3UtMx"
+        data-name="AI Agent for Software License Analysis Chatbot"
+        data-primary-color="#031B4E"
+        data-secondary-color="#E5E8ED"
+        data-button-background-color="#0061EB"
+        data-starting-message="Hello! How can I help you analyze your software licenses today?"
+        data-logo="/static/chatbot/icons/default-agent.svg">
+    </script>
+
+    <script>
+        // Set welcome message time
+        document.addEventListener('DOMContentLoaded', function() {
+            const welcomeTimeEl = document.getElementById('welcomeTime');
+            if (welcomeTimeEl) {
+                welcomeTimeEl.textContent = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            }
+        });
+    </script>
+    <script src="script.js"></script>
+</body>
+</html>
