@@ -24,9 +24,9 @@ contract-ai-agent/
 
 The frontend is pre-configured to work with your DO agent:
 
-- **Agent Endpoint**: `https://cshymth4qto42gsemd5ilwmz.agents.do-ai.run`
-- **Agent ID**: `8d977b10-fba7-11f0-b074-4e013e2ddde4`
-- **Chatbot ID**: `1hr94xpwKoOoMvpl-3cAJSmiV-U3UtMx`
+- **Agent Endpoint**: `
+- **Agent ID**: `
+- **Chatbot ID**: 
 
 ## Supported Document Types
 
