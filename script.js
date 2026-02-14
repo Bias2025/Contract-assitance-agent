@@ -1,7 +1,7 @@
 // Global variables
-const DO_AGENT_ENDPOINT = 'https://cshymth4qto42gsemd5ilwmz.agents.do-ai.run';
-const DO_AGENT_API_KEY = 'L7Lt5qh0aA_stgyikw6NgQTfRnnfOIFN';
-const AGENT_ID = '8d977b10-fba7-11f0-b074-4e013e2ddde4';
+const DO_AGENT_ENDPOINT = 'hxxxxx';
+const DO_AGENT_API_KEY = 'xxxxx';
+const AGENT_ID = 'xxxx';
 
 let currentSessionId = generateSessionId();
 let isProcessing = false;
